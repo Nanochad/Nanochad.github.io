@@ -26,18 +26,29 @@
     -webkit-background-clip:text;background-clip:text;color:transparent}
 
   /* NAV */
-  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);
-    background:rgba(10,14,20,.72);border-bottom:1px solid var(--line)}
-  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
-  .logo{font-weight:800;letter-spacing:.5px}
-  .logo span{color:var(--acc)}
-  .nav-links{display:flex;gap:26px;font-size:14px}
-  .nav-links a{color:var(--muted);transition:color .2s;position:relative}
-  .nav-links a:hover{color:var(--text)}
-  .nav-links a::after{content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;
-    background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .25s}
-  .nav-links a:hover::after{width:100%}
-  @media(max-width:720px){.nav-links{display:none}}
+  nav{position:sticky;top:0;z-index:50;transition:background .3s,box-shadow .3s,border-color .3s;
+    background:rgba(10,14,20,.5);backdrop-filter:blur(14px) saturate(150%);
+    -webkit-backdrop-filter:blur(14px) saturate(150%);border-bottom:1px solid transparent}
+  nav.scrolled{background:rgba(9,12,18,.86);border-bottom-color:var(--line);box-shadow:0 10px 30px -18px rgba(0,0,0,.9)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:66px}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand .badge{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none;
+    font-weight:800;font-size:13.5px;color:#04121a;letter-spacing:.3px;
+    background:linear-gradient(135deg,var(--acc),var(--acc2));box-shadow:0 6px 18px -6px var(--glow)}
+  .brand .who{font-weight:700;font-size:14.5px;letter-spacing:.2px;line-height:1.1}
+  .brand .who small{display:block;color:var(--muted);font-weight:500;font-size:10.5px;letter-spacing:.5px;
+    text-transform:uppercase;margin-top:3px}
+  @media(max-width:560px){.brand .who{display:none}}
+  .nav-links{display:flex;align-items:center;gap:4px;font-size:14px}
+  .nav-links a{color:var(--muted);padding:8px 14px;border-radius:9px;position:relative;
+    transition:color .2s,background .2s}
+  .nav-links a:hover{color:var(--text);background:rgba(255,255,255,.05)}
+  .nav-links a.active{color:var(--acc)}
+  .nav-links a.active::after{content:"";position:absolute;left:14px;right:14px;bottom:4px;height:2px;border-radius:2px;
+    background:linear-gradient(90deg,var(--acc),var(--acc2))}
+  .nav-links a.nav-cta{margin-left:8px;padding:8px 16px;border:1px solid var(--line);color:var(--text);background:transparent;font-weight:600}
+  .nav-links a.nav-cta:hover{border-color:var(--acc);color:var(--acc);background:rgba(45,212,191,.07);transform:translateY(-1px)}
+  @media(max-width:720px){.nav-links a:not(.nav-cta){display:none}}
 
   /* HERO */
   header.hero{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden}
@@ -158,15 +169,18 @@
 </head>
 <body>
 
-<nav>
+<nav id="nav">
   <div class="wrap">
-    <div class="logo">RP<span>.</span></div>
+    <a href="#home" class="brand">
+      <span class="badge">RP</span>
+      <span class="who">Rodrigo Patrício<small>Distributed Systems &amp; Security</small></span>
+    </a>
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#projects">Projects</a>
       <a href="#skills">Skills</a>
       <a href="#path">Path</a>
-      <a href="#contact">Contact</a>
+      <a href="#contact" class="nav-cta">Get in touch</a>
     </div>
   </div>
 </nav>
@@ -354,6 +368,19 @@
         navigator.clipboard.writeText(email).then(function(){toast('Email copied to clipboard ✓');}).catch(function(){toast(email);});
       }
     });}
+  })();
+  // nav: stronger background on scroll + active-section highlight
+  (function(){
+    var nav=document.getElementById('nav');
+    function onScroll(){ if(nav) nav.classList.toggle('scrolled', window.scrollY>12); }
+    window.addEventListener('scroll',onScroll,{passive:true}); onScroll();
+    var links=document.querySelectorAll('.nav-links a:not(.nav-cta)');
+    var spy=new IntersectionObserver(function(es){
+      es.forEach(function(e){ if(e.isIntersecting){
+        links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href')==='#'+e.target.id); });
+      }});
+    },{rootMargin:'-45% 0px -50% 0px',threshold:0});
+    ['about','projects','skills','path','contact'].forEach(function(id){var el=document.getElementById(id); if(el) spy.observe(el);});
   })();
 </script>
 </body>
