@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rodrigo Patrício — Distributed Systems &amp; Security</title>
+<style>
+  :root{
+    --bg:#0a0e14; --bg2:#0d131c; --surface:#121a25; --surface2:#16202d;
+    --line:#1e2a3a; --text:#e6edf3; --muted:#8b97a7; --dim:#5c6b7a;
+    --acc:#2dd4bf; --acc2:#38bdf8; --acc3:#a78bfa;
+    --glow:rgba(45,212,191,.25);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI","Inter",system-ui,Arial,sans-serif;
+    background:var(--bg); color:var(--text); line-height:1.6;
+    overflow-x:hidden; -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--glow);color:#fff}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1050px;margin:0 auto;padding:0 24px}
+  .mono{font-family:"SF Mono",ui-monospace,"Cascadia Code",Consolas,monospace}
+  .grad{background:linear-gradient(120deg,var(--acc),var(--acc2) 60%,var(--acc3));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* NAV */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);
+    background:rgba(10,14,20,.72);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+  .logo{font-weight:800;letter-spacing:.5px}
+  .logo span{color:var(--acc)}
+  .nav-links{display:flex;gap:26px;font-size:14px}
+  .nav-links a{color:var(--muted);transition:color .2s;position:relative}
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a::after{content:"";position:absolute;left:0;bottom:-6px;height:2px;width:0;
+    background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .25s}
+  .nav-links a:hover::after{width:100%}
+  @media(max-width:720px){.nav-links{display:none}}
+
+  /* HERO */
+  header.hero{position:relative;min-height:92vh;display:flex;align-items:center;overflow:hidden}
+  .hero-bg{position:absolute;inset:0;z-index:0}
+  .hero-bg::before{content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(600px 400px at 78% 20%,rgba(56,189,248,.16),transparent 60%),
+      radial-gradient(560px 420px at 12% 75%,rgba(167,139,250,.14),transparent 60%),
+      radial-gradient(500px 360px at 50% 50%,rgba(45,212,191,.10),transparent 60%);}
+  .grid-overlay{position:absolute;inset:0;opacity:.35;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),
+      linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 75%);
+    -webkit-mask-image:radial-gradient(circle at 50% 40%,#000 0%,transparent 75%)}
+  .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:.5;animation:float 14s ease-in-out infinite}
+  .blob.a{width:320px;height:320px;background:var(--acc);top:8%;right:6%}
+  .blob.b{width:280px;height:280px;background:var(--acc3);bottom:6%;left:4%;animation-delay:-6s}
+  @keyframes float{0%,100%{transform:translate(0,0)}50%{transform:translate(20px,-26px)}}
+  .hero-inner{position:relative;z-index:2;padding:40px 0}
+  .tag-avail{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);
+    border:1px solid var(--line);background:var(--surface);padding:6px 13px;border-radius:30px;margin-bottom:22px}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 0 var(--glow);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 var(--glow)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+  .hero h1{font-size:clamp(38px,7vw,68px);font-weight:800;line-height:1.05;letter-spacing:-1px}
+  .hero .role{font-size:clamp(17px,3vw,24px);margin-top:14px;color:var(--muted);min-height:34px}
+  .hero .role .typed{color:var(--acc);font-weight:600}
+  .hero p.lead{margin-top:20px;max-width:620px;color:var(--muted);font-size:16.5px}
+  .cta{display:flex;flex-wrap:wrap;gap:13px;margin-top:30px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:10px;font-size:14.5px;
+    font-weight:600;transition:transform .15s,box-shadow .2s,background .2s,border-color .2s}
+  .btn:hover{transform:translateY(-2px)}
+  .btn-primary{background:linear-gradient(120deg,var(--acc),var(--acc2));color:#04121a;box-shadow:0 8px 24px -8px var(--glow)}
+  .btn-primary:hover{box-shadow:0 12px 30px -6px var(--glow)}
+  .btn-ghost{border:1px solid var(--line);background:var(--surface);color:var(--text)}
+  .btn-ghost:hover{border-color:var(--acc);color:var(--acc)}
+
+  /* SECTIONS */
+  section{padding:84px 0;position:relative}
+  .sec-head{display:flex;align-items:center;gap:14px;margin-bottom:36px}
+  .sec-head .num{font-family:ui-monospace,monospace;color:var(--acc);font-size:15px}
+  .sec-head h2{font-size:clamp(24px,4vw,32px);font-weight:800;letter-spacing:-.5px;white-space:nowrap}
+  .sec-head .rule{height:1px;background:linear-gradient(90deg,var(--line),transparent);flex:1}
+  .about-grid{display:grid;grid-template-columns:1.5fr 1fr;gap:40px;align-items:start}
+  @media(max-width:760px){.about-grid{grid-template-columns:1fr;gap:24px}}
+  .about p{color:var(--muted);margin-bottom:14px}
+  .about p b{color:var(--text)}
+  .fact-card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px}
+  .fact-card .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .fact-card .row:last-child{border-bottom:none}
+  .fact-card .k{color:var(--dim)} .fact-card .v{color:var(--text);font-weight:600;text-align:right}
+
+  /* PROJECTS */
+  .proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  @media(max-width:760px){.proj-grid{grid-template-columns:1fr}}
+  .card{background:linear-gradient(180deg,var(--surface),var(--bg2));border:1px solid var(--line);
+    border-radius:16px;padding:24px;transition:transform .2s,border-color .2s,box-shadow .25s;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;border-radius:16px;padding:1px;
+    background:linear-gradient(120deg,transparent,var(--acc),transparent);opacity:0;transition:opacity .3s;
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .card:hover{transform:translateY(-5px);box-shadow:0 18px 40px -18px var(--glow)}
+  .card:hover::before{opacity:.6}
+  .card .cat{font-family:ui-monospace,monospace;font-size:11.5px;letter-spacing:1px;text-transform:uppercase;color:var(--acc)}
+  .card h3{font-size:18.5px;margin:8px 0 10px;font-weight:700}
+  .card p{color:var(--muted);font-size:14.3px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:16px}
+  .chip{font-size:11.5px;color:var(--acc2);background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.18);
+    padding:4px 10px;border-radius:20px;font-weight:500}
+  .card .link{display:inline-flex;align-items:center;gap:6px;margin-top:16px;font-size:13px;color:var(--muted);transition:color .2s}
+  .card .link:hover{color:var(--acc)}
+
+  /* SKILLS */
+  .skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media(max-width:760px){.skill-grid{grid-template-columns:1fr}}
+  .skill-group{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .skill-group h4{font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--acc);margin-bottom:14px}
+  .skill-group .chips .chip{color:var(--text);background:var(--surface2);border-color:var(--line)}
+
+  /* TIMELINE */
+  .timeline{position:relative;padding-left:28px}
+  .timeline::before{content:"";position:absolute;left:6px;top:6px;bottom:6px;width:2px;
+    background:linear-gradient(var(--acc),var(--acc3));opacity:.5}
+  .tl-item{position:relative;margin-bottom:26px}
+  .tl-item::before{content:"";position:absolute;left:-28px;top:5px;width:12px;height:12px;border-radius:50%;
+    background:var(--bg);border:2px solid var(--acc);box-shadow:0 0 0 4px rgba(45,212,191,.12)}
+  .tl-item .when{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--acc2)}
+  .tl-item h3{font-size:17px;margin:3px 0;font-weight:700}
+  .tl-item .org{color:var(--muted);font-size:14px}
+  .tl-item p{color:var(--muted);font-size:14px;margin-top:6px}
+
+  /* CERTS */
+  .cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+  .cert{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:15px 17px;
+    display:flex;gap:12px;align-items:center;transition:border-color .2s}
+  .cert:hover{border-color:var(--acc)}
+  .cert .ic{width:34px;height:34px;border-radius:9px;flex:none;display:grid;place-items:center;
+    background:rgba(45,212,191,.1);color:var(--acc);font-weight:800;font-family:monospace}
+  .cert .t{font-size:13.5px;font-weight:600;line-height:1.3}
+  .cert .i{font-size:12px;color:var(--dim)}
+
+  /* CONTACT */
+  .contact{text-align:center}
+  .contact h2{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.5px}
+  .contact p{color:var(--muted);max-width:520px;margin:16px auto 28px}
+  footer{border-top:1px solid var(--line);padding:26px 0;text-align:center;color:var(--dim);font-size:13px}
+  footer a{color:var(--muted)} footer a:hover{color:var(--acc)}
+
+  /* reveal (progressive enhancement: visible by default, animates only when JS is on) */
+  .js .reveal{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease}
+  .js .reveal.vis{opacity:1;transform:none}
+  #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(18px);
+    background:var(--surface2);border:1px solid var(--acc);color:var(--text);padding:11px 20px;border-radius:10px;
+    font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s;
+    z-index:100;box-shadow:0 12px 34px -12px var(--glow)}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+<script>document.documentElement.classList.add('js')</script>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="logo">RP<span>.</span></div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#projects">Projects</a>
+      <a href="#skills">Skills</a>
+      <a href="#path">Path</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="home">
+  <div class="hero-bg"><div class="grid-overlay"></div><div class="blob a"></div><div class="blob b"></div></div>
+  <div class="wrap hero-inner">
+    <div class="tag-avail"><span class="dot"></span> Available from January 2027 · open to relocation &amp; remote</div>
+    <h1>Rodrigo <span class="grad">Patrício</span></h1>
+    <div class="role mono">&gt; <span class="typed" id="typed"></span><span style="color:var(--acc)">_</span></div>
+    <p class="lead">MSc Computer Science student at NOVA FCT, building the hard parts of large-scale systems: consensus and replication, applied cryptography, and code that stays correct under load.</p>
+    <div class="cta">
+      <a class="btn btn-primary" href="#contact">Get in touch</a>
+      <a class="btn btn-ghost" href="https://github.com/Nanochad" target="_blank">GitHub</a>
+      <a class="btn btn-ghost" href="https://www.linkedin.com/in/rodrigo-patr%C3%ADcio-101349287" target="_blank">LinkedIn</a>
+      <a class="btn btn-ghost" href="resume.pdf" target="_blank">Download CV</a>
+    </div>
+  </div>
+</header>
+
+<section id="about">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="num">01</span><h2>About</h2><span class="rule"></span></div>
+    <div class="about-grid">
+      <div class="about reveal">
+        <p>I am in the final year of my MSc in Computer Science at <b>NOVA School of Science &amp; Technology</b> in Lisbon, specialising in <b>distributed systems</b> and <b>cybersecurity</b>, after a completed BSc in Informatics Engineering.</p>
+        <p>What I enjoy most is the part of computing that is genuinely hard: getting machines to agree (consensus), keeping data correct and available when things fail, and computing on data without giving up its confidentiality. I am comfortable from <b>low-level C++</b> all the way up to <b>Kubernetes</b> and the cloud.</p>
+        <p>I learn fast, I like turning theory into systems that actually run, and I am looking for engineering and research roles where reliability and security matter.</p>
+      </div>
+      <div class="fact-card reveal">
+        <div class="row"><span class="k">Location</span><span class="v">Portalegre, Portugal</span></div>
+        <div class="row"><span class="k">Status</span><span class="v">MSc, final year</span></div>
+        <div class="row"><span class="k">Focus</span><span class="v">Distributed Systems · Security</span></div>
+        <div class="row"><span class="k">Work auth</span><span class="v">EU citizen</span></div>
+        <div class="row"><span class="k">Languages</span><span class="v">Portuguese · English (C1/C2)</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="projects" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="num">02</span><h2>Projects</h2><span class="rule"></span></div>
+    <div class="proj-grid">
+
+      <div class="card reveal">
+        <div class="cat">Distributed Systems</div>
+        <h3>State Machine Replication with Paxos &amp; Raft</h3>
+        <p>Implemented the Paxos and Raft consensus algorithms from the ground up to provide fault-tolerant, strongly consistent state-machine replication across distributed nodes. The same coordination and reliability problems that large computing grids have to solve.</p>
+        <div class="chips"><span class="chip">Paxos</span><span class="chip">Raft</span><span class="chip">Consensus</span><span class="chip">Fault tolerance</span></div>
+      </div>
+
+      <div class="card reveal">
+        <div class="cat">Applied Cryptography</div>
+        <h3>Homomorphic-Encrypted Employee Database</h3>
+        <p>A database that computes directly over encrypted records using Paillier homomorphic and Boldyreva order-preserving encryption, so range queries and aggregation run without ever decrypting the underlying data.</p>
+        <div class="chips"><span class="chip">Paillier</span><span class="chip">Order-preserving enc.</span><span class="chip">Privacy</span></div>
+      </div>
+
+      <div class="card reveal">
+        <div class="cat">Security / Networking</div>
+        <h3>Encrypted Streaming Server</h3>
+        <p>A media streaming server that protects content in transit, keeping delivery between server and clients secure end to end.</p>
+        <div class="chips"><span class="chip">Encryption</span><span class="chip">Networking</span><span class="chip">Servers</span></div>
+      </div>
+
+      <div class="card reveal">
+        <div class="cat">Neo4j / Graph DB</div>
+        <h3>Lisbon Public-Transport Graph</h3>
+        <p>Modelled Lisbon's public-transport network as a Neo4j graph database, answering route and connectivity questions with Cypher.</p>
+        <div class="chips"><span class="chip">Neo4j</span><span class="chip">Cypher</span><span class="chip">Python</span></div>
+        <a class="link" href="https://github.com/Nanochad/GrafoLisboa" target="_blank">View repo on GitHub &rarr;</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="num">03</span><h2>Skills</h2><span class="rule"></span></div>
+    <div class="skill-grid">
+      <div class="skill-group reveal"><h4>Languages</h4><div class="chips">
+        <span class="chip">C++</span><span class="chip">Python</span><span class="chip">Java</span><span class="chip">SQL</span><span class="chip">Cypher</span></div></div>
+      <div class="skill-group reveal"><h4>Distributed Systems</h4><div class="chips">
+        <span class="chip">Paxos</span><span class="chip">Raft</span><span class="chip">Consensus</span><span class="chip">State machine replication</span><span class="chip">Fault tolerance</span></div></div>
+      <div class="skill-group reveal"><h4>Security &amp; Cryptography</h4><div class="chips">
+        <span class="chip">Homomorphic (Paillier)</span><span class="chip">Order-preserving (Boldyreva)</span><span class="chip">Cloud security</span><span class="chip">Linux</span></div></div>
+      <div class="skill-group reveal"><h4>Cloud &amp; Data</h4><div class="chips">
+        <span class="chip">AWS</span><span class="chip">Azure</span><span class="chip">GCP</span><span class="chip">Kubernetes</span><span class="chip">Azure Cosmos DB</span><span class="chip">Neo4j</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="path" style="background:var(--bg2)">
+  <div class="wrap">
+    <div class="sec-head reveal"><span class="num">04</span><h2>Experience &amp; Education</h2><span class="rule"></span></div>
+    <div class="about-grid">
+      <div class="reveal">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="when">Oct 2024 — Feb 2025</div>
+            <h3>Software Developer</h3>
+            <div class="org">STAB VIDA · Lisbon</div>
+            <p>Built new features in C++ for DoctorVida Education, a microcontroller-based spectrophotometer device, working close to the hardware within a small product team that shipped and tested features.</p>
+          </div>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="when">Sep 2025 — Jun 2027 (expected)</div>
+            <h3>MSc, Computer Science</h3>
+            <div class="org">NOVA FCT · Distributed Systems &amp; Cybersecurity</div>
+          </div>
+          <div class="tl-item">
+            <div class="when">Sep 2021 — Jun 2025</div>
+            <h3>BSc, Informatics Engineering</h3>
+            <div class="org">NOVA FCT · Lisbon</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px" class="reveal">
+      <h4 style="font-size:13px;text-transform:uppercase;letter-spacing:1px;color:var(--acc);margin-bottom:16px">Certifications</h4>
+      <div class="cert-grid">
+        <div class="cert"><div class="ic">G</div><div><div class="t">Foundations of Cybersecurity</div><div class="i">Google</div></div></div>
+        <div class="cert"><div class="ic">G</div><div><div class="t">Play It Safe: Manage Security Risks</div><div class="i">Google</div></div></div>
+        <div class="cert"><div class="ic">G</div><div><div class="t">Tools of the Trade: Linux &amp; SQL</div><div class="i">Google</div></div></div>
+        <div class="cert"><div class="ic">P</div><div><div class="t">Cybersecurity Foundation</div><div class="i">Palo Alto Networks</div></div></div>
+        <div class="cert"><div class="ic">A</div><div><div class="t">Cloud Technical Essentials</div><div class="i">AWS</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="contact">
+  <div class="wrap">
+    <div style="font-family:ui-monospace,monospace;color:var(--acc);font-size:15px;margin-bottom:10px">05 — What's next</div>
+    <h2>Let's build something reliable.</h2>
+    <p>Open to engineering and research roles, master's thesis placements, and remote work from January 2027. If your team works on distributed systems or security, I would love to talk.</p>
+    <div class="cta" style="justify-content:center">
+      <a class="btn btn-primary" id="copyEmail" href="mailto:rudrapatricio@gmail.com">rudrapatricio@gmail.com</a>
+      <a class="btn btn-ghost" href="https://mail.google.com/mail/?view=cm&amp;fs=1&amp;to=rudrapatricio@gmail.com" target="_blank" rel="noopener">Open in Gmail</a>
+      <a class="btn btn-ghost" href="https://github.com/Nanochad" target="_blank">GitHub</a>
+      <a class="btn btn-ghost" href="https://www.linkedin.com/in/rodrigo-patr%C3%ADcio-101349287" target="_blank">LinkedIn</a>
+    </div>
+    <div style="margin-top:14px;font-size:13px;color:var(--dim)">Tip: click the address to copy it, or use "Open in Gmail" to write to me right away.</div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Rodrigo Patrício · Portalegre, Portugal · Built with plain HTML &amp; CSS</div>
+</footer>
+
+<div id="toast"></div>
+<script>
+  // typing effect
+  (function(){
+    const words=["Distributed Systems Engineer","Cybersecurity &amp; Applied Crypto","C++ · Python · Java","Consensus, Replication, Reliability"];
+    const el=document.getElementById('typed');
+    let w=0,c=0,del=false;
+    function tick(){
+      const full=words[w].replace("&amp;","&");
+      el.textContent=full.slice(0,c);
+      if(!del){ c++; if(c>full.length){del=true; setTimeout(tick,1400); return;} }
+      else { c--; if(c<0){del=false; w=(w+1)%words.length; c=0;} }
+      setTimeout(tick, del?45:80);
+    }
+    tick();
+  })();
+  // reveal on scroll
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');io.unobserve(e.target);}})},{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  // contact: copy email + toast (mailto still opens a mail app for those who have one)
+  (function(){
+    var t=document.getElementById('toast');
+    function toast(m){if(!t)return;t.textContent=m;t.classList.add('show');clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove('show');},2200);}
+    var ce=document.getElementById('copyEmail');
+    if(ce){ce.addEventListener('click',function(e){
+      var email='rudrapatricio@gmail.com';
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        e.preventDefault();
+        navigator.clipboard.writeText(email).then(function(){toast('Email copied to clipboard ✓');}).catch(function(){toast(email);});
+      }
+    });}
+  })();
+</script>
+</body>
+</html>
